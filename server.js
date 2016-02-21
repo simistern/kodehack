@@ -1,12 +1,12 @@
 var express = require('express');
-app = express();
+server = express();
 var r = require("rethinkdbdash")();
 var bodyParser = require("body-parser");
 
 require("rethink-config")({
   "r": r,
-  "database": "kodehack",
-  "tables": ["points", "user", "ticket", "message"]
+  "database": "circle",
+  "tables": ["points", "users", "ticket", "tracker"]
 });
 
 var SlackBot = require('slackbots');
@@ -43,9 +43,30 @@ var bot = new SlackBot({
     console.log(data);
 }); */
 
+//ClientId: 19855363600.22359464534
+//ClientSecret: 394afe7c34f6eb5bad8fd33eda04bb18
+
+/*
+slackbot features:
+  - ask for points
+  - ask which tutorial they're on
+   -submit help ticket to instructor
+*/
+
+server.use(bodyParser.json());
+server.use(bodyParser.urlencoded({
+  extended:true
+}));
+
+server.use(express.static('./public'));
+
+server.get("*", function(request, result){
+  result.sendFile(__dirname + "/public/index.html");
+})
+
 var msg = "new ticket how do I do things"
 
-getContext = function(msg){
+server.get("/getcontext" = function(msg){
   var msgarray = "";
   msgarray = msg.match("get points");
   if(msg.match("get points")){
@@ -64,20 +85,27 @@ getContext = function(msg){
 
 getPoints = function(data){
     //PARSE USER DATA
-    r.db("kodehack").table("points").filter({
+    r.db("circle").table("points").filter({
       "user" : username
     }).getField("user").then(function(res){
+        pointsamt = //parsed res
+        responsemsg = "You currently have " + pointsamt + "points playa";
+        slackBotResponse(username, responsemsg);
         console.log("Here is the data " + res);
     })
 }
 
 checkTutorial = function(data){
     //PARSE USER DATA
-    r.db("kodehack").table("TUTORIAL").filter({
+    r.db("circle").table("TUTORIAL").filter({
       "user" : username
     }).getField("user").then(function(res){
+        console.log("checking tutorial " + JSON.stringify(res));
+        currentprog = //parsed res
+        responsemsg = "Your current checklist progress is " + currentprog;
+        slackBotResponse(user, responsemsg);
         console.log("Here is the data " + res);
-    })
+    });
 }
 
 AddTicket = function(data){
@@ -86,44 +114,21 @@ AddTicket = function(data){
     ticketmsg = data.split("new ticket");
     console.log("Checking interior ticket msg " + ticketmsg[1]);
 
-    r.db("kodehack").table("ticket").filter({
+    r.db("circle").table("ticket").filter({
       "user" : username
     }).update(ticketmsg[1]).then(function(res){
-        responsemsg = "Your ticket has been sent to our site! The ticket was " + ticketmsg[1]);
+        responsemsg = "Your ticket has been sent to our site! The ticket was " + ticketmsg[1];
         slackBotResponse(user, responsemsg);
         console.log("Here is the data " + res);
     })
 }
 
 slackBotResponse = function(user, msg){
-  bot.postMessageToChannel(user, msg, params);
+  bot.postMessageToUser(user, msg, params);
 }
 
-
-
-//ClientId: 19855363600.22359464534
-//ClientSecret: 394afe7c34f6eb5bad8fd33eda04bb18
-
-/*
-slackbot features:
-  - ask for points
-  - ask which tutorial they're on
-   -submit help ticket to instructor
-*/
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended:true
-}));
-
-app.use(express.static('./public'));
-
-app.get("*", function(request, result){
-  result.sendFile(__dirname + "/public/index.html");
-})
+getContext(msg);
 
 var PORT = process.env.PORT || 3000;
-app.listen(PORT);
+server.listen(PORT);
 console.log("You are listening on port " + PORT);
-
-getContext(msg);
