@@ -58,14 +58,14 @@ getContext = function(msg){
   }
   else if(msg.match("new ticket")){
     console.log("new ticket check");
-    AddTicket(data);
+    AddTicket(msg);
   }
 }
 
 getPoints = function(data){
     //PARSE USER DATA
     r.db("kodehack").table("points").filter({
-      "user" : username;
+      "user" : username
     }).getField("user").then(function(res){
         console.log("Here is the data " + res);
     })
@@ -74,23 +74,31 @@ getPoints = function(data){
 checkTutorial = function(data){
     //PARSE USER DATA
     r.db("kodehack").table("TUTORIAL").filter({
-      "user" : username;
+      "user" : username
     }).getField("user").then(function(res){
         console.log("Here is the data " + res);
     })
 }
 
-checkTutorial = function(data){
+AddTicket = function(data){
     //PARSE USER DATA
 
+    ticketmsg = data.split("new ticket");
+    console.log("Checking interior ticket msg " + ticketmsg[1]);
 
-
-    r.db("kodehack").table("TUTORIAL").filter({
-      "user" : username;
-    }).getField("user").then(function(res){
+    r.db("kodehack").table("ticket").filter({
+      "user" : username
+    }).update(ticketmsg[1]).then(function(res){
+        responsemsg = "Your ticket has been sent to our site! The ticket was " + ticketmsg[1]);
+        slackBotResponse(user, responsemsg);
         console.log("Here is the data " + res);
     })
 }
+
+slackBotResponse = function(user, msg){
+  bot.postMessageToChannel(user, msg, params);
+}
+
 
 
 //ClientId: 19855363600.22359464534
@@ -117,3 +125,5 @@ app.get("*", function(request, result){
 var PORT = process.env.PORT || 3000;
 app.listen(PORT);
 console.log("You are listening on port " + PORT);
+
+getContext(msg);
