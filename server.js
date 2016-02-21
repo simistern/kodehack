@@ -86,7 +86,7 @@ server.get("/getcontext" = function(msg){
 getPoints = function(data){
     //PARSE USER DATA
     r.db("circle").table("points").filter({
-      "user" : username
+      "user" : user
     }).getField("user").then(function(res){
         pointsamt = //parsed res
         responsemsg = "You currently have " + pointsamt + "points playa";
